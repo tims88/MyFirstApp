@@ -92,6 +92,9 @@ class SendMessageToServerTask extends AsyncTask<String, Void, String> {
 	@Override
 	protected String doInBackground(String... params) {
 		
+		String address = getAddress(params[0]);
+		String response = null;
+		
 		try {
 			Socket client = new Socket("192.168.1.103", 4444);
 			PrintWriter printwriter = new PrintWriter(client.getOutputStream(),true);
@@ -101,8 +104,9 @@ class SendMessageToServerTask extends AsyncTask<String, Void, String> {
 			
 			
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			System.out.println("Response received is : " + in.readLine());
-			
+			response = in.readLine();
+			System.out.println("Response received is : " + response);
+
 			in.close();
 			printwriter.close();
 			client.close();   //closing the connection
@@ -117,7 +121,21 @@ class SendMessageToServerTask extends AsyncTask<String, Void, String> {
 			System.out.println("IOException");
 		}
 		
+		if (address != null && response != null) {
+			sendTextMessage(address, response);
+		}
+		
 		return null;
+	}
+	
+	private String getAddress(String message) {
+		return message.substring(9, message.indexOf(':')-1);
+	}
+	
+	private void sendTextMessage(String address, String message) {
+		System.out.println("Sending text message: address=" + address + " message=" + message);
+		SmsManager sms = SmsManager.getDefault();
+		sms.sendTextMessage(address, null,message , null, null);
 	}
 	
 }
