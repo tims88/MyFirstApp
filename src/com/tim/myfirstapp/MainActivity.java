@@ -1,12 +1,17 @@
 package com.tim.myfirstapp;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
@@ -52,8 +57,12 @@ public class MainActivity extends Activity {
 		EditText editText = (EditText) findViewById(R.id.edit_message);
 		String message = editText.getText().toString();
 		
-		SmsManager sms = SmsManager.getDefault();
-		sms.sendTextMessage("3035034184", null,message , null, null);
+		//SmsManager sms = SmsManager.getDefault();
+		//sms.sendTextMessage("3035034184", null,message , null, null);
+		
+		new SendMessageToServerTask().execute(message);
+		
+		
 		
 		TextView textHistory = (TextView) findViewById(R.id.textView1);
 		String text = textHistory.getText().toString();
@@ -81,4 +90,37 @@ public class MainActivity extends Activity {
         super.onPause();
     }
 
+}
+
+class SendMessageToServerTask extends AsyncTask<String, Void, String> {
+
+	@Override
+	protected String doInBackground(String... message) {
+		
+		
+		Socket client;
+		PrintWriter printwriter;
+		try {
+			client = new Socket("192.168.1.103", 4444); //connect to server
+			printwriter = new PrintWriter(client.getOutputStream(),true);
+			
+			printwriter.write(message[0]);  //write the message to output stream
+
+			printwriter.flush();
+			printwriter.close();
+			client.close();   //closing the connection
+			
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("UnkownHostException");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("IOException");
+		}  
+		
+		return null;
+	}
+	
 }
